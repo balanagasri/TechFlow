@@ -71,6 +71,23 @@ export function TasksPage() {
     }
   };
 
+  const handleStatusChange = async (taskId: number, nextStatus: string) => {
+    const task = tasks.find((entry) => entry.id === taskId);
+    if (!task || task.status === nextStatus) {
+      return;
+    }
+
+    try {
+      const response = await api.put(`/api/tasks/${taskId}`, {
+        ...task,
+        status: nextStatus,
+      });
+      setTasks((current) => current.map((entry) => (entry.id === taskId ? response.data : entry)));
+    } catch (error) {
+      console.error('Failed to update task status', error);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -145,6 +162,18 @@ export function TasksPage() {
                     <div key={task.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
                       <div className="font-medium text-slate-800">{task.title}</div>
                       <div className="mt-1 text-xs text-slate-500">Project #{task.project_id}</div>
+                      <div className="mt-3">
+                        <label className="text-[11px] uppercase tracking-wide text-slate-500">Status</label>
+                        <select
+                          value={task.status}
+                          onChange={(event) => handleStatusChange(task.id, event.target.value)}
+                          className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm outline-none focus:border-cyan-500"
+                        >
+                          {statusOrder.map((status) => (
+                            <option key={status} value={status}>{status}</option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                   ))
                 )}
